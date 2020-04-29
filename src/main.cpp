@@ -62,21 +62,31 @@ int main() {
 
     pid.Init(0.12,0,2.757);
 
-    pid.Init(0.11028, 0, 3.0327);
-   // pid.Init(0.13739, 1.82815e-08, 15.4198);
+    pid.Init(0.11028, 9.68619e-06, 3.327);
+    pid.Init(0.11028, 9.68619e-06, 3.77153);
 
-    // New best 0.1, 0.0001, 1.1
+    /*
+     *  New best 0.121308, 9.68619e-06, 3.77153
+twiddle
+ New best 0.133439, 9.68619e-06, 3.77153
+twiddle
+ New best 0.146783, 9.68619e-06, 3.77153
+twiddle
+twiddle
+ New best 0.132104, 9.68619e-06, 3.77153
+     */
+
+pid.Init(0.132104, 9.68619e-06, 3.77153);
   Twiddle twiddle(pid);
 
   //
    // pid.Init(17.47891, 18.89687, 11125.80059);
-  int iteration = 0;
+  int iteration = -2;
 
-  /**
-   * TODO: Initialize the pid variable.
-   */
+  bool shouldTwiddle = false;
 
-  h.onMessage([&pid, &twiddle, &iteration](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,
+
+  h.onMessage([&pid, &twiddle, &iteration, &shouldTwiddle](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,
                      uWS::OpCode opCode) {
     // "42" at the start of the message means there's a websocket message event.
     // The 4 signifies a websocket message
@@ -96,6 +106,8 @@ int main() {
           double angle = std::stod(j[1]["steering_angle"].get<string>());
           pid.UpdateError(cte);
           double steer_value = pid.Run();
+
+          double d_error = pid.GetDError();
        //   std::cout << "pre-steer" << steer_value << std::endl;
           if (steer_value > 1) {
               steer_value = 1;
@@ -103,16 +115,11 @@ int main() {
               steer_value = -1;
           }
 
-          if (iteration++ % 2000 == 0){
+          if (iteration++ % 6000 == 0 && shouldTwiddle){
               std::cout << "twiddle " << std::endl;
               twiddle.Execute();
           }
-          /**
-           * TODO: Calculate steering value here, remember the steering value is
-           *   [-1, 1].
-           * NOTE: Feel free to play around with the throttle and speed.
-           *   Maybe use another PID controller to control the speed!
-           */
+
           
           // DEBUG
 //         std::cout << "CTE: " << cte << " Steering Value: " << steer_value
@@ -124,7 +131,8 @@ int main() {
         //  std::cout << cte << std::endl;
 
           double throttle = 1;
-          if (cte > 0.5){
+      
+          if (d_error > 0 || cte > 0.5){
               if (speed < 15) {
                   throttle = 0.3;
               } else {
