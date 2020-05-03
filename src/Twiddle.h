@@ -25,10 +25,6 @@ public:
         dp[coeff] *= 0.9;
 
         if (++stage == 4) stage = 1;
-//        stage = 1;
-//        coeff = 0;
-//        dp = { 1,1,1};
-
     }
 
     vector<double> GetCurrentBest(){

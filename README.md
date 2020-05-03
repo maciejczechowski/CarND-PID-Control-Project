@@ -1,5 +1,39 @@
 # CarND-Controls-PID
-Self-Driving Car Engineer Nanodegree Program
+Self-Driving Car Engineer Nanodegree Program - PID Controller
+
+##Introduction
+This is a project implementing a PID controller for Term2 simulator of Udacity Self-Driving Car Engineer Program.
+It also contains auto-tune algorithm using Twiddle. 
+
+## The controller
+The controller logic is contained in `pid.h/pid.cpp` - it provides a direct implementation of PID algorithm.
+Additionally the `Twiddle` class in `twiddle.h` contains an algorithm for auto-tuning the P, I, D parameters.
+It was used to fine-tune the parameters which were first selected manually to allow car get through the track. 
+Using only twiddle was problematic, as the car quickly felt off the track.
+
+The initial parameter selection and meaning each of each parameter is discussed below:
+
+### P(roportional)   
+The P parameter has the most direct impact on the controller. It steers contrary to cte (left when car is going right and otherwise) therefore creating oscillating movements.
+Too high P parameter lead to high oscillations and car quickly falling of the track. Making P too low caused the car not to follow the path as it could not react quickly enough to the change.
+When setting parameter manually, it was set to the way that the car was driving with stable oscillations (I and D were set to 0). Input for fine tune was set to 0.12
+
+### D(ifferential) 
+The D parameter damps the oscillations when error is low, meaning that our car drives close to the path without weaving left and right. Setting D to high meant that the car could not react to changes quickly enough.
+Manual selection meant finding the lowest value that caused oscillations to disappear (with P value set as above and I set to 0). This was set to 2.757.
+
+### I(ntegral)
+Integral parameter works on accumulated error, therefore removing the bias that goes out from P-D controller. Example reason of bias could be a steering drift.
+I parameter was a most difficult to work with. Slight increase of I caused the car to go like crazy. In the end, this parameter was set to 0.00001, allowing Twiddle to find a better value using very small steps.
+
+## Twiddle
+The manual parameters of (0.12, 0, 2.757) were then passed to Twiddle algorithm. It was run over 2000, then 6000 frames. PID was not including first 500 measurements when calculating Total Error for Twiddle - this was introduced to allow controller to settle down.
+Twiddle was tweaked to use slow initial learning rate, with 0.1 of initial value of each parameter.
+
+After a dozens of drives, the final parameters were calculated as (0.132104, 9.68619e-06, 3.77153).
+The effect of those can be seen on [this video](PID_control.m4v), which also uses pretty aggressive throttle.
+
+  
 
 ---
 
@@ -58,41 +92,4 @@ cmake and make!
 More information is only accessible by people who are already enrolled in Term 2
 of CarND. If you are enrolled, see [the project page](https://classroom.udacity.com/nanodegrees/nd013/parts/40f38239-66b6-46ec-ae68-03afd8a601c8/modules/f1820894-8322-4bb3-81aa-b26b3c6dcbaf/lessons/e8235395-22dd-4b87-88e0-d108c5e5bbf4/concepts/6a4d8d42-6a04-4aa6-b284-1697c0fd6562)
 for instructions and the project rubric.
-
-## Hints!
-
-* You don't have to follow this directory structure, but if you do, your work
-  will span all of the .cpp files here. Keep an eye out for TODOs.
-
-## Call for IDE Profiles Pull Requests
-
-Help your fellow students!
-
-We decided to create Makefiles with cmake to keep this project as platform
-agnostic as possible. Similarly, we omitted IDE profiles in order to we ensure
-that students don't feel pressured to use one IDE or another.
-
-However! I'd love to help people get up and running with their IDEs of choice.
-If you've created a profile for an IDE that you think other students would
-appreciate, we'd love to have you add the requisite profile files and
-instructions to ide_profiles/. For example if you wanted to add a VS Code
-profile, you'd add:
-
-* /ide_profiles/vscode/.vscode
-* /ide_profiles/vscode/README.md
-
-The README should explain what the profile does, how to take advantage of it,
-and how to install it.
-
-Frankly, I've never been involved in a project with multiple IDE profiles
-before. I believe the best way to handle this would be to keep them out of the
-repo root to avoid clutter. My expectation is that most profiles will include
-instructions to copy files to a new location to get picked up by the IDE, but
-that's just a guess.
-
-One last note here: regardless of the IDE used, every submitted project must
-still be compilable with cmake and make./
-
-## How to write a README
-A well written README file can enhance your project and portfolio.  Develop your abilities to create professional README files by completing [this free course](https://www.udacity.com/course/writing-readmes--ud777).
 

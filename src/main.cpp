@@ -43,22 +43,6 @@ int main() {
   //initial guess
    // pid.Init(0.1, 0.00001, 5);
 
-    //twiddle step one
-   // pid.Init(0.137263, 9.68619e-06, 4.87291);
-
-    //pid.Init(0.137263, 9.68619e-06, 3);
-
-    pid.Init(0.137263, 9.68619e-06, 15.5215);
-
-    pid.Init(0.137263, 9.68619e-06, 55.5215);
-
-    pid.Init(0.576354, 9.68619e-06, 172.117);
-
-    pid.Init(1.15271, 9.68619e-06, 172.117);
-
-    pid.Init(0.13739, 4.15538e-09, 25.61);
-
-    pid.Init(0.13739, 1.6501e-08, 23.049);
 
     pid.Init(0.12,0,2.757);
 
@@ -77,14 +61,11 @@ twiddle
      */
 
 pid.Init(0.132104, 9.68619e-06, 3.77153);
-  Twiddle twiddle(pid);
 
-  //
-   // pid.Init(17.47891, 18.89687, 11125.80059);
+  Twiddle twiddle(pid);
   int iteration = -2;
 
   bool shouldTwiddle = false;
-
 
   h.onMessage([&pid, &twiddle, &iteration, &shouldTwiddle](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,
                      uWS::OpCode opCode) {
@@ -119,22 +100,20 @@ pid.Init(0.132104, 9.68619e-06, 3.77153);
               std::cout << "twiddle " << std::endl;
               twiddle.Execute();
           }
-
-          
-          // DEBUG
-//         std::cout << "CTE: " << cte << " Steering Value: " << steer_value
-//                    << std::endl;
-
           json msgJson;
           msgJson["steering_angle"] = steer_value;
 
-        //  std::cout << cte << std::endl;
 
           double throttle = 1;
-      
-          if (d_error > 0 || cte > 0.5){
-              if (speed < 15) {
+
+
+          if (cte > 0.5){
+              if (speed < 35) {
                   throttle = 0.3;
+              } else if (cte > 1.5 ){
+                  throttle = -1;
+              } else if (cte > 1 ){
+                  throttle = -0.5;
               } else {
                   throttle = 0;
               }
